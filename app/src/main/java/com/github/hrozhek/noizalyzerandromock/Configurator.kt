@@ -6,14 +6,19 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.navigation.fragment.findNavController
-import com.github.hrozhek.noizalyzerandromock.databinding.FragmentFirstBinding
+import com.github.hrozhek.noizalyzerandromock.databinding.ConfiguratorBinding
 
 /**
  * A simple [Fragment] subclass as the default destination in the navigation.
  */
-class FirstFragment : Fragment() {
+class Configurator : Fragment() {
 
-    private var _binding: FragmentFirstBinding? = null
+    private var _binding: ConfiguratorBinding? = null
+//
+//    private lateinit var server: String
+//    private var port: Int = 8080
+//    private lateinit var endpoint: String
+
 
     // This property is only valid between onCreateView and
     // onDestroyView.
@@ -24,7 +29,7 @@ class FirstFragment : Fragment() {
             savedInstanceState: Bundle?
     ): View? {
 
-        _binding = FragmentFirstBinding.inflate(inflater, container, false)
+        _binding = ConfiguratorBinding.inflate(inflater, container, false)
         return binding.root
 
     }
@@ -33,7 +38,13 @@ class FirstFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         binding.buttonFirst.setOnClickListener {
-            findNavController().navigate(R.id.action_FirstFragment_to_SecondFragment)
+            val server = binding.editTextTextPersonName.text.toString()
+            val port = binding.editTextTextPersonName2.text.toString().toInt()
+            val endpoint = binding.editTextTextPersonName3.text.toString()
+            val client = ConnectionClient(server, port, endpoint);
+            Thread(client::initConnection).start()
+
+            findNavController().navigate(R.id.action_Config_to_MainCycle)
         }
     }
 

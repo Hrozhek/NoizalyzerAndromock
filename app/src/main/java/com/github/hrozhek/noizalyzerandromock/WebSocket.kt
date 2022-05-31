@@ -49,7 +49,7 @@ class WebSocket(address: String, port: Int, endpoint: String, ws: String) {
 
     init {
         webSocketClient = createClient(formatAddress(address, port, endpoint, ws))
-        webSocketClient.enableAutomaticReconnection(5000)
+//        webSocketClient.enableAutomaticReconnection(5000)
         webSocketClient.connect()
     }
 

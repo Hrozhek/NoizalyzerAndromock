@@ -1,14 +1,15 @@
 package com.github.hrozhek.noizalyzerandromock
 
+import android.Manifest
+import android.content.pm.PackageManager
 import android.os.Bundle
-import com.google.android.material.snackbar.Snackbar
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.navigateUp
-import androidx.navigation.ui.setupActionBarWithNavController
 import android.view.Menu
 import android.view.MenuItem
+import androidx.core.app.ActivityCompat
 import com.github.hrozhek.noizalyzerandromock.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
@@ -22,8 +23,16 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        reqPer();
 
         val navController = findNavController(R.id.nav_host_fragment_content_main)
+    }
+
+    private fun reqPer() {
+        val perms: Array<String> = arrayOf(Manifest.permission.RECORD_AUDIO)
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, perms, 1)
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {

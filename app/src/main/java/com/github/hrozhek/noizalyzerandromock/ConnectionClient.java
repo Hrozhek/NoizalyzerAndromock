@@ -2,8 +2,10 @@ package com.github.hrozhek.noizalyzerandromock;
 
 import java.util.UUID;
 
+import okhttp3.FormBody;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import okhttp3.RequestBody;
 import okhttp3.Response;
 
 
@@ -21,8 +23,11 @@ public class ConnectionClient {
     }
 
     public UUID initConnection() {
+        RequestBody empty = new FormBody.Builder().build();
+
         Request request = new Request.Builder()
                 .url(formatRequest("controller"))
+                .post(empty)
                 .build();
         Response response;
         try {
@@ -48,8 +53,11 @@ public class ConnectionClient {
 
     public String getWsLink(UUID id) {
         String path = String.format("controller/%s/file", id);
+        RequestBody empty = new FormBody.Builder().build();
+
         Request request = new Request.Builder()
                 .url(formatRequest(path))
+                .post(empty)
                 .build();
         Response response;
         try {

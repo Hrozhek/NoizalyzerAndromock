@@ -25,6 +25,7 @@ public class Microphone {
 
     private final Context context;
     private final Duration duration;
+
     public Microphone(Context context, Duration duration) {
         this.context = context;
         this.duration = duration;
@@ -35,15 +36,7 @@ public class Microphone {
 
         byte audioData[] = new byte[BUFFER_SIZE];
         if (ActivityCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
-//            ActivityCompat.requestPermissions();
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
-            throw new RuntimeException();//todo
+            System.out.println("micro not permitted!!!");
         }
         AudioRecord recorder = new AudioRecord(AUDIO_SOURCE,
                 SAMPLING_RATE, CHANNEL_IN_CONFIG,
@@ -52,12 +45,11 @@ public class Microphone {
 
         ByteArrayOutputStream out = null;
         try {
-            int numBytesRead = 0;
             out = new ByteArrayOutputStream();
             System.out.println("start reading!");//todo window
             Instant end = Instant.now().plus(duration);
             while (Instant.now().isBefore(end)) {
-                numBytesRead = recorder.read(audioData, 0, audioData.length);
+                int numBytesRead = recorder.read(audioData, 0, audioData.length);
                 out.write(audioData, 0, numBytesRead);
             }
             System.out.println("stop reading!!!");//todo window

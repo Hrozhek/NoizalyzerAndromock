@@ -1,5 +1,6 @@
 package com.github.hrozhek.noizalyzerandromock
 
+import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -15,7 +16,7 @@ import java.util.concurrent.ScheduledExecutorService
  */
 class MainCycle : Fragment() {
 
-    private val context: AppContext = AppContext.getAppCon()
+    private val context: AppContext = AppContext.instance
     private var _binding: MainCycleBinding? = null
     private var executor: ScheduledExecutorService? = null
 
@@ -51,10 +52,11 @@ class MainCycle : Fragment() {
     fun startMainCycle() {
         val timeout = context.writeTimeout
         executor = Executors.newSingleThreadScheduledExecutor()
-        val worker = MainCycleWorker(this.getContext())//TODO stop
+        val con: Context = this.requireContext()
+        val worker = MainCycleWorker(con)//TODO stop it
         Thread { ->
             worker.init()
-            executor?.scheduleAtFixedRate(worker, 0, timeout.time, timeout.timeUnit)
+            executor?.scheduleAtFixedRate(worker, 0, timeout!!.time, timeout.timeUnit)
         }.start()
     }
 }

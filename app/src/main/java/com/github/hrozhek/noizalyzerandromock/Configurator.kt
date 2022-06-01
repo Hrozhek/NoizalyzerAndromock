@@ -45,12 +45,12 @@ class Configurator : Fragment() {
     }
 
     private fun readValuesToContext() {
-        val ctx = AppContext.getAppCon()
+        val ctx = AppContext.instance
         ctx.server = wrapTryCatch({ -> binding.editTextTextPersonName.text.toString()}, "localhost")
         ctx.port = wrapTryCatch({ -> binding.editTextTextPersonName2.text.toString().toInt()}, 8080)
         ctx.endpoint = wrapTryCatch({ -> binding.editTextTextPersonName3.text.toString()}, "noizalyzer")
 
-        ctx.connectionClient = ConnectionClient(ctx.server, ctx.port, ctx.endpoint);
+        ctx.connectionClient = ConnectionClient(ctx.server!!, ctx.port, ctx.endpoint!!);
 
         ctx.writeTimeout = wrapTryCatch({ ->
             Timeout(binding.editTextTextPersonName4.text.toString().toLong(),

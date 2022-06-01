@@ -1,94 +1,79 @@
-package com.github.hrozhek.noizalyzerandromock;
+package com.github.hrozhek.noizalyzerandromock
 
-import android.app.Activity;
-import android.app.AlertDialog;
-import android.content.Context;
-import android.content.Intent;
-import android.view.Gravity;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.widget.PopupWindow;
+import android.app.AlertDialog
+import android.content.Context
+import com.github.hrozhek.noizalyzerandromock.AppContext.Companion.instance
+import androidx.core.content.ContextCompat
+import java.lang.Exception
+import java.time.Duration
+import java.time.temporal.ChronoUnit
+import java.util.ArrayList
 
-import androidx.core.content.ContextCompat;
-
-import java.time.Duration;
-import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.List;
-
-public class MainCycleWorker implements Runnable {
-
-    private final AppContext appContext = AppContext.getAppCon();
-    private final Context context;
-    private ConnectionClient client;
-    private Microphone microphone;
-    private WebSocket ws;
-
-    public MainCycleWorker(Context context) {
-        this.context = context;
-    }
-
-    @Override
-    public void run() {
-        List<AlertDialog> dialogs = new ArrayList<>();
+class MainCycleWorker(private val context: Context) : Runnable {
+    private val appContext = instance
+    private var client: ConnectionClient? = null
+    private var microphone: Microphone? = null
+    private var ws: WebSocket? = null
+    override fun run() {
+        val dialogs: MutableList<AlertDialog> = ArrayList()
         try {
-            ContextCompat.getMainExecutor(context).execute(()  -> {
-                dialogs.add(new AlertDialog.Builder(context)
+            ContextCompat.getMainExecutor(context).execute {
+                dialogs.add(
+                    AlertDialog.Builder(
+                        context
+                    )
                         .setTitle("reading mic")
-                        .setMessage("reading mic").show());
-                    });
-
-            byte read[] = microphone.read();
-            ContextCompat.getMainExecutor(context).execute(()  -> {
-                dialogs.stream().filter(AlertDialog::isShowing).forEach(AlertDialog::dismiss);
-            });
-            ContextCompat.getMainExecutor(context).execute(()  -> {
-                dialogs.add(new AlertDialog.Builder(context)
-                        .setTitle("writing through ws")
-                        .setMessage("writing through ws").show());
-            });
-//            new AlertDialog.Builder(context)
-//                    .setTitle("writing through ws")
-//                    .setMessage("writing through ws").show();
-            doWs(read);
-        } catch (Exception e) {
-            System.out.println(e);//TODO
+                        .setMessage("reading mic").show()
+                )
+            }
+            val read = microphone!!.read()
+            ContextCompat.getMainExecutor(context).execute {
+                dialogs.stream().filter { obj: AlertDialog -> obj.isShowing }
+                    .forEach { obj: AlertDialog -> obj.dismiss() }
+            }
+            doWs(read)
+        } catch (e: Exception) {
+            println(e) //TODO
         } finally {
-            ContextCompat.getMainExecutor(context).execute(()  -> {
-                for (AlertDialog dialog: dialogs) {
-                    if (dialog.isShowing()) {
-                        dialog.dismiss();
+            ContextCompat.getMainExecutor(context).execute {
+                for (dialog in dialogs) {
+                    if (dialog.isShowing) {
+                        dialog.dismiss()
                     }
                 }
-            });
-        }
-    }
-
-    private void doWs(byte[] read) {
-        if (ws == null) {
-            String link = client.getWsLink(appContext.getId());
-            ws = new WebSocket(appContext.getServer(), appContext.getPort(), appContext.getEndpoint(), link);
-        }
-        try {
-            ws.sendData(read);
-        } catch (Exception e) {
-            System.out.println(e);//TODO
-            try {
-                ws.sendData(read);
-            } catch (Exception ee) {
-                System.out.println("tried twice, not successful" + e);
-                ws = null;
             }
         }
     }
 
-    public void init() {
-        client = appContext.getConnectionClient();
-        if (appContext.getId() == null) {
-            appContext.setId(client.initConnection());
+    private fun doWs(read: ByteArray) {
+        if (ws == null) {
+            val link = client!!.getWsLink(appContext.id)
+            ws = WebSocket(appContext.server!!, appContext.port, appContext.endpoint!!, link)
         }
-        Timeout timeout = appContext.getReadTimeout();
-        Duration duration = Duration.of(timeout.getTime(), ChronoUnit.valueOf(timeout.getTimeUnit().toString()));
-        microphone = new Microphone(context, duration);
+        try {
+            ws!!.sendData(read)
+        } catch (e: Exception) {
+            println(e) //TODO
+            try {
+                ws!!.sendData(read)
+            } catch (ee: Exception) {
+                println("tried twice, not successful$e")
+                ws = null
+            }
+        }
+    }
+
+    fun init() {
+        client = appContext.connectionClient
+        if (appContext.id == null) {
+            appContext.id = client!!.initConnection()
+        }
+        val timeout = appContext.readTimeout
+        val duration = Duration.of(
+            timeout!!.time, ChronoUnit.valueOf(
+                timeout.timeUnit.toString()
+            )
+        )
+        microphone = Microphone(context, duration)
     }
 }
